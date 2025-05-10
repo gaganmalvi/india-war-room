@@ -64,27 +64,27 @@ export default function WarRoomDashboard() {
       const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
       const response = await fetch(proxyUrl);
       const data = await response.text();
-      
+
       // Parse the XML
       const parser = new DOMParser();
       const xml = parser.parseFromString(data, "application/xml");
       const items = xml.querySelectorAll("item");
-      
+
       const feedItems = Array.from(items)
-      .map(item => {
-        return {
-          title: item.querySelector("title")?.textContent || "",
-          link: item.querySelector("link")?.textContent || "",
-          description: item.querySelector("description")?.textContent || "",
-          pubDate: item.querySelector("pubDate")?.textContent || ""
-        };
-      })
-      .filter(item => {
-        const content = `${item.title} ${item.description}`.toLowerCase();
-        return warKeywords.some(keyword => content.includes(keyword.toLowerCase()));
-      })
-      .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime()); 
-      
+        .map(item => {
+          return {
+            title: item.querySelector("title")?.textContent || "",
+            link: item.querySelector("link")?.textContent || "",
+            description: item.querySelector("description")?.textContent || "",
+            pubDate: item.querySelector("pubDate")?.textContent || ""
+          };
+        })
+        .filter(item => {
+          const content = `${item.title} ${item.description}`.toLowerCase();
+          return warKeywords.some(keyword => content.includes(keyword.toLowerCase()));
+        })
+        .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+
       const updatedFeeds = [...rssFeeds];
       updatedFeeds[activeRssFeed].items = feedItems;
       setRssFeeds(updatedFeeds);
@@ -137,19 +137,19 @@ export default function WarRoomDashboard() {
                     <h2 className="text-lg font-semibold flex items-center">
                       <Rss size={16} className="mr-2" /> RSS Feeds
                     </h2>
-                    <button 
+                    <button
                       onClick={() => fetchRssFeed(rssFeeds[activeRssFeed].url)}
                       className="p-1.5 bg-[#333] hover:bg-blue-600 rounded-full transition-colors"
                       title="Refresh feed"
                       disabled={loading}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" 
-                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" 
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                         className={`${loading ? "animate-spin text-blue-400" : "text-gray-300"}`}>
-                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                        <path d="M21 3v5h-5"/>
-                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-                        <path d="M8 16H3v5"/>
+                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                        <path d="M21 3v5h-5" />
+                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                        <path d="M8 16H3v5" />
                       </svg>
                     </button>
                   </div>
@@ -158,11 +158,10 @@ export default function WarRoomDashboard() {
                       <button
                         key={index}
                         onClick={() => setActiveRssFeed(index)}
-                        className={`px-2 py-1 text-xs rounded ${
-                          activeRssFeed === index
+                        className={`px-2 py-1 text-xs rounded ${activeRssFeed === index
                             ? "bg-blue-600 text-white"
                             : "bg-[#333] text-gray-400 hover:bg-blue-700"
-                        }`}
+                          }`}
                       >
                         {feed.name}
                       </button>
@@ -184,8 +183,8 @@ export default function WarRoomDashboard() {
                           </a>
                         </h3>
                         <p className="text-xs text-gray-400 mt-1">{new Date(item.pubDate).toLocaleString()}</p>
-                        <div 
-                          className="mt-2 text-xs text-gray-300" 
+                        <div
+                          className="mt-2 text-xs text-gray-300"
                           dangerouslySetInnerHTML={{ __html: item.description }}
                         />
                       </div>
@@ -228,6 +227,12 @@ export default function WarRoomDashboard() {
 
           {activeView === "info" && (
             <div className="w-full h-full p-4 text-sm text-gray-400">
+              <p className="text-4xl font-['Yatra_One'] mt-4 mb-6 leading-12">
+                यदा यदा हि धर्मस्य ग्लानिर्भवति भारत ।<br />
+                अभ्युत्थानमधर्मस्य तदात्मानं सृजाम्यहम् ॥<br />
+                परित्राणाय साधूनां विनाशाय च दुष्कृताम् ।<br />
+                धर्मासंस्थापनार्थाय संभवामि युगे युगे ॥<br />
+              </p>
               <p><strong>Version:</strong> 0.2.0 (RSS Update)</p>
               <p><strong>Author:</strong> War Room India</p>
               <p><strong>Data Sources:</strong> ADS-B Exchange, Twitter/X, RSS feeds (Times of India)</p>
@@ -242,8 +247,8 @@ export default function WarRoomDashboard() {
         <button
           onClick={() => setActiveView("flight")}
           className={`p-3 rounded-xl transition-all duration-200 ${activeView === "flight"
-              ? "bg-red-600 text-white shadow-md scale-105"
-              : "bg-[#333] text-gray-400 hover:bg-red-700"
+            ? "bg-red-600 text-white shadow-md scale-105"
+            : "bg-[#333] text-gray-400 hover:bg-red-700"
             }`}
         >
           <Plane size={20} />
@@ -251,8 +256,8 @@ export default function WarRoomDashboard() {
         <button
           onClick={() => setActiveView("map")}
           className={`p-3 rounded-xl transition-all duration-200 ${activeView === "map"
-              ? "bg-yellow-600 text-white shadow-md scale-105"
-              : "bg-[#333] text-gray-400 hover:bg-yellow-700"
+            ? "bg-yellow-600 text-white shadow-md scale-105"
+            : "bg-[#333] text-gray-400 hover:bg-yellow-700"
             }`}
         >
           <MapPin size={20} />
@@ -260,8 +265,8 @@ export default function WarRoomDashboard() {
         <button
           onClick={() => setActiveView("news")}
           className={`p-3 rounded-xl transition-all duration-200 ${activeView === "news"
-              ? "bg-blue-600 text-white shadow-md scale-105"
-              : "bg-[#333] text-gray-400 hover:bg-blue-700"
+            ? "bg-blue-600 text-white shadow-md scale-105"
+            : "bg-[#333] text-gray-400 hover:bg-blue-700"
             }`}
         >
           <Newspaper size={20} />
@@ -269,16 +274,13 @@ export default function WarRoomDashboard() {
         <button
           onClick={() => setActiveView("info")}
           className={`p-3 rounded-xl transition-all duration-200 ${activeView === "info"
-              ? "bg-gray-500 text-white shadow-md scale-105"
-              : "bg-[#333] text-gray-400 hover:bg-gray-600"
+            ? "bg-gray-500 text-white shadow-md scale-105"
+            : "bg-[#333] text-gray-400 hover:bg-gray-600"
             }`}
         >
           <Info size={20} />
         </button>
       </div>
-      <footer className="w-full max-w-6xl text-center text-sm text-gray-500 mt-8">
-        &copy; {new Date().getFullYear()} War Room Dashboard | India
-      </footer>
     </div>
   );
 }
