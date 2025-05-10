@@ -22,7 +22,7 @@ export default function WarRoomDashboard() {
   ]);
   const [activeRssFeed, setActiveRssFeed] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
-
+  const [conflictStatus] = useState<string>("violated"); // Options: "active", "ceasefire", "violated"
   const officialTwitterHandles = [
     "SpokespersonMoD",
     "adgpi",
@@ -31,10 +31,7 @@ export default function WarRoomDashboard() {
     "narendramodi",
     "MEAIndia",
     "rajnathsingh",
-    "OmarAbdullah"
-  ];
-
-  const speculativeTwitterHandles = [
+    "OmarAbdullah",
     "ShivAroor",
     "ANI",
     "sidhant"
@@ -97,19 +94,32 @@ export default function WarRoomDashboard() {
 
   return (
     <div className="min-h-screen min-w-screen bg-[#222222] text-white flex flex-col items-center justify-start p-6">
-      <header className="w-full text-left mb-6">
-        <h1 className="text-3xl font-bold">
-          {activeView === "news" && "Live News Feed"}
-          {activeView === "flight" && "Live Flight Radar"}
-          {activeView === "map" && "Conflict Map"}
-          {activeView === "info" && "Info & Version"}
-        </h1>
-        <p className="text-sm text-gray-400">
-          {activeView === "news" && "RSS Feeds, Tweets & Headlines from Trusted Sources"}
-          {activeView === "flight" && "Courtesy ADS-B Exchange"}
-          {activeView === "map" && "Major Attacks and Conflict Events"}
-          {activeView === "info" && "War Room Project - India-Pakistan Tracker"}
-        </p>
+      <header className="w-full flex justify-between items-start mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">
+            {activeView === "news" && "Live News Feed"}
+            {activeView === "flight" && "Live Flight Radar"}
+            {activeView === "map" && "Conflict Map"}
+            {activeView === "info" && "Info & Version"}
+          </h1>
+          <p className="text-sm text-gray-400">
+            {activeView === "news" && "RSS Feeds, Tweets & Headlines from Trusted Sources"}
+            {activeView === "flight" && "Courtesy ADS-B Exchange"}
+            {activeView === "map" && "Major Attacks and Conflict Events"}
+            {activeView === "info" && "War Room Project - India-Pakistan Tracker"}
+          </p>
+        </div>
+        <div className="flex flex-col items-end">
+          <div className={`px-3 py-1.5 rounded-md font-medium text-sm ${
+            conflictStatus === "active" ? "bg-red-600 text-white" : 
+            conflictStatus === "ceasefire" ? "bg-green-600 text-white" : 
+            "bg-yellow-600 text-white"
+          }`}>
+            {conflictStatus === "active" ? "WAR ACTIVE" : 
+             conflictStatus === "ceasefire" ? "CEASEFIRE" : 
+             "CEASEFIRE VIOLATED"}
+          </div>
+        </div>
       </header>
 
       <main className="w-full flex-1">
@@ -212,16 +222,7 @@ export default function WarRoomDashboard() {
               {/* Right Column - Twitter Feeds (Second Group) */}
               <div className="w-1/3 pl-4 overflow-y-auto">
                 <h2 className="text-lg font-semibold mb-4 sticky top-0 bg-[#222222] pb-2 z-10">Other Updates</h2>
-                {speculativeTwitterHandles.map((handle) => (
-                  <blockquote
-                    key={handle}
-                    className="twitter-tweet mb-6"
-                    data-theme="dark"
-                    data-dnt="true"
-                  >
-                    <a href={`https://x.com/${handle}`}>Tweets by @{handle}</a>
-                  </blockquote>
-                ))}
+
               </div>
             </div>
           )}
