@@ -2,59 +2,26 @@ import { useEffect, useState } from "react";
 import { MapPin, Plane, Newspaper, Info, Rss } from "lucide-react";
 import './App.css';
 
+interface RssFeed {
+  name: string;
+  url: string;
+  items: Array<{
+    title: string;
+    link: string;
+    description: string;
+    pubDate: string;
+  }>;
+}
+
 export default function WarRoomDashboard() {
-  const [activeView, setActiveView] = useState("news");
-  const [rssFeeds, setRssFeeds] = useState([
+  const [activeView, setActiveView] = useState<"news" | "flight" | "map" | "info">("news");
+  const [rssFeeds, setRssFeeds] = useState<RssFeed[]>([
+    { name: "CNBC TV18", url: "https://www.cnbctv18.com/commonfeeds/v1/cne/rss/india.xml", items: [] },
     { name: "Times of India", url: "https://timesofindia.indiatimes.com/rssfeedstopstories.cms", items: [] },
-    { name: "NDTV - Top Stories", url: "https://feeds.feedburner.com/ndtvnews-top-stories", items: [] },
-    { name: "CNBC TV18", url: "https://www.cnbctv18.com/commonfeeds/v1/cne/rss/india.xml", items: [] }
+    { name: "NDTV - Top Stories", url: "https://feeds.feedburner.com/ndtvnews-top-stories", items: [] }
   ]);
-  const [activeRssFeed, setActiveRssFeed] = useState(0);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (activeView === "news") {
-      // Load Twitter widgets
-      const script = document.createElement("script");
-      script.setAttribute("src", "https://platform.twitter.com/widgets.js");
-      script.setAttribute("async", "true");
-      document.body.appendChild(script);
-
-      // Fetch RSS feed
-      fetchRssFeed(rssFeeds[activeRssFeed].url);
-    }
-  }, [activeView, activeRssFeed]);
-
-  const fetchRssFeed = async (url) => {
-    setLoading(true);
-    try {
-      // Using a CORS proxy to fetch the RSS feed
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-      const response = await fetch(proxyUrl);
-      const data = await response.text();
-      
-      // Parse the XML
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(data, "application/xml");
-      const items = xml.querySelectorAll("item");
-      
-      const feedItems = Array.from(items).map(item => {
-        return {
-          title: item.querySelector("title")?.textContent || "",
-          link: item.querySelector("link")?.textContent || "",
-          description: item.querySelector("description")?.textContent || "",
-          pubDate: item.querySelector("pubDate")?.textContent || ""
-        };
-      });
-      
-      const updatedFeeds = [...rssFeeds];
-      updatedFeeds[activeRssFeed].items = feedItems;
-      setRssFeeds(updatedFeeds);
-    } catch (error) {
-      console.error("Error fetching RSS feed:", error);
-    }
-    setLoading(false);
-  };
+  const [activeRssFeed, setActiveRssFeed] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const officialTwitterHandles = [
     "SpokespersonMoD",
@@ -71,6 +38,61 @@ export default function WarRoomDashboard() {
     "ANI",
     "sidhant"
   ];
+
+  const warKeywords = [
+    "war", "conflict", "attack", "missile", "airstrike", "border", "terrorist",
+    "troops", "military", "army", "Pakistan", "India", "LoC", "Kashmir", "shelling"
+  ];
+
+  useEffect(() => {
+    if (activeView === "news") {
+      // Load Twitter widgets dynamically
+      const script = document.createElement("script");
+      script.setAttribute("src", "https://platform.twitter.com/widgets.js");
+      script.setAttribute("async", "true");
+      document.body.appendChild(script);
+
+      // Fetch RSS feed
+      fetchRssFeed(rssFeeds[activeRssFeed].url);
+    }
+  }, [activeView, activeRssFeed]);
+
+  const fetchRssFeed = async (url: string) => {
+    setLoading(true);
+    try {
+      // Using a CORS proxy to fetch the RSS feed
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      const response = await fetch(proxyUrl);
+      const data = await response.text();
+      
+      // Parse the XML
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(data, "application/xml");
+      const items = xml.querySelectorAll("item");
+      
+      const feedItems = Array.from(items)
+      .map(item => {
+        return {
+          title: item.querySelector("title")?.textContent || "",
+          link: item.querySelector("link")?.textContent || "",
+          description: item.querySelector("description")?.textContent || "",
+          pubDate: item.querySelector("pubDate")?.textContent || ""
+        };
+      })
+      .filter(item => {
+        const content = `${item.title} ${item.description}`.toLowerCase();
+        return warKeywords.some(keyword => content.includes(keyword.toLowerCase()));
+      })
+      .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime()); 
+      
+      const updatedFeeds = [...rssFeeds];
+      updatedFeeds[activeRssFeed].items = feedItems;
+      setRssFeeds(updatedFeeds);
+    } catch (error) {
+      console.error("Error fetching RSS feed:", error);
+    }
+    setLoading(false);
+  };
 
   return (
     <div className="min-h-screen min-w-screen bg-[#222222] text-white flex flex-col items-center justify-start p-6">
@@ -108,7 +130,6 @@ export default function WarRoomDashboard() {
 
           {activeView === "news" && (
             <div className="w-full h-full overflow-y-auto p-4 text-sm text-gray-300 flex flex-row">
-              {/* Left Column - RSS Feeds */}
               {/* Left Column - RSS Feeds */}
               <div className="w-1/3 pr-4 border-r border-gray-700 overflow-y-auto">
                 <div className="mb-4 sticky top-0 bg-[#222222] pb-2 z-10">
@@ -211,6 +232,7 @@ export default function WarRoomDashboard() {
               <p><strong>Author:</strong> War Room India</p>
               <p><strong>Data Sources:</strong> ADS-B Exchange, Twitter/X, RSS feeds (Times of India)</p>
               <p><strong>Notes:</strong> This is an OSINT-based project. No classified or government data is used.</p>
+              <p><strong>Notice:</strong> I know the map is screwed on ADS-B Exchange. That's an issue on their part, not mine. I am not affiliated to ADS-B Exchange.</p>
             </div>
           )}
         </div>
@@ -255,7 +277,7 @@ export default function WarRoomDashboard() {
         </button>
       </div>
       <footer className="w-full max-w-6xl text-center text-sm text-gray-500 mt-8">
-        &copy; {new Date().getFullYear()} War Room Dashboard | India-Pakistan OSINT
+        &copy; {new Date().getFullYear()} War Room Dashboard | India
       </footer>
     </div>
   );
