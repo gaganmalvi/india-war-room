@@ -30,7 +30,8 @@ export default function WarRoomDashboard() {
     "ShashiTharoor",
     "narendramodi",
     "MEAIndia",
-    "rajnathsingh"
+    "rajnathsingh",
+    "OmarAbdullah"
   ];
 
   const speculativeTwitterHandles = [
